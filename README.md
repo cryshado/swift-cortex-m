@@ -8,23 +8,23 @@ Building blocks for Arm® Cortex®-M development in Embedded Swift.
 
 ## Example Usage
 
-1. Install [`Arm Toolchain for Embedded`](https://support.arm.com/tools-and-software/arm-toolchain-for-embedded)
-and add it to your environment
+1. Install [Arm Toolchain for Embedded](https://support.arm.com/tools-and-software/arm-toolchain-for-embedded)
+and add it to your environment.
 
-Follow to https://github.com/arm/arm-toolchain repository, download a prebuilt release for your system
-or build it from sources, then add an `ARM_TOOLCHAIN_FOR_EMBEDDED` environment variables pointing to it
-(for example `ARM_TOOLCHAIN_FOR_EMBEDDED=/Users/user/toolchains/ATfE-22.1.0-Darwin-universal`)
+Go to the [arm/arm-toolchain](https://github.com/arm/arm-toolchain) repository and download a prebuilt release for your system
+or build it from source, then set the `ARM_TOOLCHAIN_FOR_EMBEDDED` environment variable to point to it
+(for example, `ARM_TOOLCHAIN_FOR_EMBEDDED=/Users/user/toolchains/ATfE-22.1.0-Darwin-universal`).
 
-2. Make sure you are using Swift toolchains via [swiftly](https://github.com/swiftlang/swiftly)
+2. Make sure you are using a Swift toolchain installed via [swiftly](https://github.com/swiftlang/swiftly).
 
-3. Create an empty directory for the future project, cd to it, and the project
+3. Create an empty directory for the new project, `cd` into it, and initialize the package:
 ```bash
 mkdir swift-cortex-m-example
 cd swift-cortex-m-example
 swift package init --disable-swift-testing --type executable --name App
 ```
 
-4. Replace `let package...` section in `Package.swift` with the following code
+4. Replace the `let package = ...` section in `Package.swift` with the following:
 ```swift
 let package = Package(
     name: "swift-cortex-m-example",
@@ -46,7 +46,7 @@ let package = Package(
 )
 ```
 
-5. Replace code in `Sources/App/App.swift`, we'll blink an LED using registers
+5. Replace the code in `Sources/App/App.swift`. We'll blink an LED by writing registers directly:
 ```swift
 import CortexMCore
 import CortexMRuntime
@@ -68,14 +68,14 @@ struct App {
 }
 ```
 
-6. Setup the project configuration using the `CortexMSetup` plugin
+6. Set up the project configuration using the `CortexMSetup` plugin:
 ```bash
 SWIFT_STM32_DEVICES=STM32G431 swift package \
     --allow-writing-to-package-directory cortex-m-setup \
     --device STM32G431
 ```
 
-7. Setup `memory.x` for your target MCU, STM32G431 in our case
+7. Edit the generated `memory.x` for your target MCU (STM32G431 in this example):
 ```
 MEMORY
 {
@@ -87,12 +87,12 @@ _heap_size  = 0;
 _stack_size = 0x400;
 ```
 
-8. Compile the project using make, wait a bit
+8. Build the project with `make` (the first build takes a while):
 ```bash
 SWIFT_STM32_DEVICES=STM32G431 make all
 ```
 
-9. Upload `.build/release/App.bin` to your MCU board and enjoy!
+9. Flash `.build/release/App.bin` to your board and enjoy!
 
 ## HardFault Backtraces
 
