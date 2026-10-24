@@ -1,0 +1,55 @@
+TARGET       := @TARGET@
+TRIPLE       := @TRIPLE@
+CLANG_TRIPLE := @CLANG_TRIPLE@
+CPU_FLAGS    := @CPU_FLAGS@
+BUILD        := .build/release
+
+ATFE = $(or $(ARM_TOOLCHAIN_FOR_EMBEDDED),$(error ARM_TOOLCHAIN_FOR_EMBEDDED is not set.))
+
+ATFE_LIB = $(dir $(shell $(ATFE)/bin/clang \
+             --target=$(CLANG_TRIPLE) $(CPU_FLAGS) \
+             -print-file-name=libc.a))
+
+ATFE_TOOLSET := .build/atfe-toolset.json
+
+NPROC := $(shell nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)
+
+SWIFT_FLAGS := -c release -j $(NPROC)  \
+                --triple $(TRIPLE)     \
+                --toolset toolset.json \
+                --build-system native
+
+.PHONY: all build bin hex size disasm vectors clean
+
+all: build bin hex
+
+build:
+	@mkdir -p $(dir $(ATFE_TOOLSET))
+	@printf '%s\n' \
+	    '{' \
+	    '    "schemaVersion": "1.0",' \
+	    '    "linker": {' \
+	    '        "extraCLIOptions": [ "-L", "$(ATFE_LIB)" ]' \
+	    '    }' \
+	    '}' > $(ATFE_TOOLSET)
+	swift build $(SWIFT_FLAGS) --toolset $(ATFE_TOOLSET)
+
+bin: build
+	$(ATFE)/bin/llvm-objcopy -O binary $(BUILD)/$(TARGET) $(BUILD)/$(TARGET).bin
+
+hex: build
+	$(ATFE)/bin/llvm-objcopy -O ihex $(BUILD)/$(TARGET) $(BUILD)/$(TARGET).hex
+
+size: build
+	$(ATFE)/bin/llvm-size $(BUILD)/$(TARGET)
+
+disasm: build
+	$(ATFE)/bin/llvm-objdump -d --demangle $(BUILD)/$(TARGET) \
+	  | swift demangle > $(BUILD)/$(TARGET).s
+	@echo "wrote $(BUILD)/$(TARGET).s"
+
+vectors: build
+	$(ATFE)/bin/llvm-objdump -s -j .vector_table $(BUILD)/$(TARGET)
+
+clean:
+	rm -rf .build

@@ -1,0 +1,36 @@
+{
+    "schemaVersion": "1.0",
+    "swiftCompiler": {
+        "extraCLIOptions": [
+            "-enable-experimental-feature", "Embedded",
+            "-enable-experimental-feature", "Volatile",
+            "-wmo",
+            "-Xfrontend", "-disable-stack-protector",
+            "-Xfrontend", "-function-sections",
+            "-target-cpu", "@TARGET_CPU@",
+            @CPU_XCC@
+            "-Xcc", "-fno-pic",
+            "-Xclang-linker", "-nostdlib",
+            "-Xclang-linker", "-fuse-ld=lld"
+        ]
+    },
+    "cCompiler": {
+        "extraCLIOptions": [
+            @CPU_CC@
+            "-fno-pic",
+            "-DSCMR_IRQ_COUNT=@IRQ_COUNT@",
+            "-DSCMR_DEBUG_HARDFAULT_UNWIND",
+            "-ffunction-sections",
+            "-fdata-sections"
+        ]
+    },
+    "linker": {
+        "extraCLIOptions": [
+            "-T", "linkerscript.ld",
+            "-L", ".",
+            "--gc-sections",
+            "-lc",
+            "-lclang_rt.builtins"
+        ]
+    }
+}

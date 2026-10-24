@@ -1,0 +1,14 @@
+# .gitignore
+
+.build/
+.swiftpm/
+Packages/
+Package.resolved
+
+.sourcekit-lsp
+.vscode
+
+.DS_Store
+
+.clangd
+toolset.json
